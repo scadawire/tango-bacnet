@@ -1,0 +1,29 @@
+"BACnetDS" is written with the bacpypes library, thanks to which it was possible to create
+BACnet IP enabled device server in the Python programming language. This device
+classes have the following properties:
+1. IP - IP address of the computer on which we run the "BACnetDS" class device,
+2. ObjectName - the name of the device,
+3. ObjectIdentifier - device identifier,
+4. MaxApduLengthAccepted - maximum PDU length,
+5. SegmentationSupported - segmentation setup, available options are:
+a) segmentedBoth
+b) segmentedTransmit
+c) segmentedReceive
+d) noSegmentation
+6. Properties - attribute configuration. Based on this property, they stay dynamically
+generated attributes.
+Example:
+```
+ip_address = 192.168.155.178; BACnet_type = device; instance = 555;write = True; property_name = location;```
+data_type = CharacterString
+All fields except write are obligatory, the appropriate values ​​must be separated
+lined with colons. Precise description:
+a) ip_address - the IP address of the device with which we communicate,
+b) BACnet_type - type of device with which we communicate, e.g. device,
+c) instance - the instance number of the device with which we communicate,
+d) write - if this property is set to "True" then the attribute will be able to
+write,
+
+e) property_name - name of the variable that the attribute will represent, e.g. pre-
+sentValue,
+f) data_type - type of variable that the attribute will represent.

@@ -1,0 +1,6 @@
+#!/usr/local/bin/python2.7
+
+from bacnetds import BACnetDS
+
+if __name__ == "__main__":
+    BACnetDS.main()
