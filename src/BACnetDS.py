@@ -42,14 +42,14 @@ __all__ = ["BACnetDS", "BACnetDSClass", "main"]
 
 __docformat__ = 'restructuredtext'
 
-import PyTango
+import tango
 import sys
 # Add additional import
 #----- PROTECTED REGION ID(BACnetDS.additionnal_import) ENABLED START -----#
 import time
 from bacpypes.core import run, stop
-from bacpypes.app import LocalDeviceObject
-from bacnet_app import ReadWriteApplication, deferred
+from bacpypes.local.device import LocalDeviceObject
+from .bacnet_app import ReadWriteApplication, deferred
 #----- PROTECTED REGION END -----#	//	BACnetDS.additionnal_import
 
 # Device States Description
@@ -57,7 +57,7 @@ from bacnet_app import ReadWriteApplication, deferred
 # OFF : 
 # FAULT :
 
-class BACnetDS (PyTango.Device_4Impl):
+class BACnetDS (tango.Device_4Impl):
     """DS for communicating with devices via BACnet IP protocol."""
     
     # -------- Add you global variables here --------------------------
@@ -66,7 +66,7 @@ class BACnetDS (PyTango.Device_4Impl):
     #----- PROTECTED REGION END -----#	//	BACnetDS.global_variables
 
     def __init__(self, cl, name):
-        PyTango.Device_4Impl.__init__(self,cl,name)
+        tango.Device_4Impl.__init__(self,cl,name)
         self.debug_stream("In __init__()")
         BACnetDS.init_device(self)
         #----- PROTECTED REGION ID(BACnetDS.__init__) ENABLED START -----#
@@ -86,7 +86,7 @@ class BACnetDS (PyTango.Device_4Impl):
             services_supported = self.BACnet_application.get_services_supported()
             self.BACnet_device.protocolServicesSupported = services_supported.value
         except Exception as e:
-            print "In __init_", e
+            print("In __init_", e)
 
         #----- PROTECTED REGION END -----#	//	BACnetDS.__init__
         
@@ -136,13 +136,13 @@ class BACnetDS (PyTango.Device_4Impl):
                     dict_key = str(att_name) + ' at ' + str(instance)
                     self.values_dictionary[dict_key] = 0
                 except Exception as e:
-                    print e
+                    print(e)
 
             self.readout_time = time.time()
-            self.set_state(PyTango.DevState.ON)
+            self.set_state(tango.DevState.ON)
             self.set_status('Device is in ON state.')
         except Exception as e:
-            print "In init_device()", e
+            print("In init_device()", e)
         #----- PROTECTED REGION END -----#	//	BACnetDS.init_device
 
     def always_executed_hook(self):
@@ -171,7 +171,7 @@ class BACnetDS (PyTango.Device_4Impl):
             else:
                 pass
         except Exception as e:
-            print "In always_excuted_hook()", e
+            print("In always_excuted_hook()", e)
         #----- PROTECTED REGION END -----#	//	BACnetDS.always_executed_hook
 
     # -------------------------------------------------------------------------
@@ -184,7 +184,7 @@ class BACnetDS (PyTango.Device_4Impl):
             value = str(self.values_dictionary[attr_name])
             attr.set_value(value)
         except Exception as e:
-            print 'read_bacnet', e
+            print('read_bacnet', e)
 
     def write_bacnet(self, attr):
         """General method for writing attribute"""
@@ -193,7 +193,7 @@ class BACnetDS (PyTango.Device_4Impl):
             prop_id = attr_name.split(' ')[0]
             obj_inst = attr_name.split(' ')[2]
             for dev_prop_it, instance_it, it in zip(self.device_properties, self.device_instance,
-                                                    range(0, len(self.device_instance))):
+                                                    list(range(0, len(self.device_instance)))):
                 if prop_id == dev_prop_it and instance_it == obj_inst:
                     dev_index = it
                     addr = self.device_ip[dev_index]
@@ -204,10 +204,10 @@ class BACnetDS (PyTango.Device_4Impl):
                     run()
                     break
         except Exception as e:
-            print 'write_bacnet', e
+            print('write_bacnet', e)
 
     def is_bacnet_allowed(self, attr):
-        return self.get_state() != PyTango.DevState.FAULT
+        return self.get_state() != tango.DevState.FAULT
 
     def initialize_dynamic_attributes(self):
         self.debug_stream("In initialize_dynamic_attributes()")
@@ -216,16 +216,16 @@ class BACnetDS (PyTango.Device_4Impl):
                                                           self.properties_with_write, self.property_data_type):
                 attr_name = str(dev) + ' at ' + str(instance)
                 if data_type.lower() == 'integer':
-                    tango_type = PyTango.DevLong
+                    tango_type = tango.DevLong
                 elif data_type.lower() == 'real':
-                    tango_type = PyTango.DevFloat
+                    tango_type = tango.DevFloat
                 elif data_type.lower() == 'bitstring':
-                    tango_type = PyTango.DevBoolean
+                    tango_type = tango.DevBoolean
                 else:
-                    tango_type = PyTango.DevString
-                prop = PyTango.UserDefaultAttrProp()
+                    tango_type = tango.DevString
+                prop = tango.UserDefaultAttrProp()
                 if writable == False:
-                    attr = PyTango.Attr(attr_name, tango_type, PyTango.READ)
+                    attr = tango.Attr(attr_name, tango_type, tango.READ)
                     attr.set_default_properties(prop)
                     attr.set_polling_period(3000)
                     self.add_attribute(attr,
@@ -233,7 +233,7 @@ class BACnetDS (PyTango.Device_4Impl):
                                        is_allo_meth=self.is_bacnet_allowed)
                     self.set_change_event(attr_name, True, True)
                 else:
-                    attr = PyTango.Attr(attr_name, tango_type, PyTango.READ_WRITE)
+                    attr = tango.Attr(attr_name, tango_type, tango.READ_WRITE)
                     attr.set_default_properties(prop)
                     attr.set_polling_period(3000)
                     self.add_attribute(attr,
@@ -242,7 +242,7 @@ class BACnetDS (PyTango.Device_4Impl):
                                        is_allo_meth=self.is_bacnet_allowed)
                     self.set_change_event(attr_name, True, True)
         except Exception as e:
-            print "In initialize_dynamic_attributes()", e
+            print("In initialize_dynamic_attributes()", e)
 
     def read_attr_hardware(self, data):
         self.debug_stream("In read_attr_hardware()")
@@ -261,7 +261,7 @@ class BACnetDS (PyTango.Device_4Impl):
 
     #----- PROTECTED REGION END -----#	//	BACnetDS.programmer_methods
 
-class BACnetDSClass(PyTango.DeviceClass):
+class BACnetDSClass(tango.DeviceClass):
     # -------- Add you global class variables here --------------------------
     #----- PROTECTED REGION ID(BACnetDS.global_class_variables) ENABLED START -----#
     def dyn_attr(self, dev_list):
@@ -270,7 +270,7 @@ class BACnetDSClass(PyTango.DeviceClass):
         :meth:`BACnetDS.initialize_dynamic_attributes` for each device
 
         :param dev_list: list of devices
-        :type dev_list: :class:`PyTango.DeviceImpl`"""
+        :type dev_list: :class:`tango.DeviceImpl`"""
 
         for dev in dev_list:
             try:
@@ -290,27 +290,27 @@ class BACnetDSClass(PyTango.DeviceClass):
     #    Device Properties
     device_property_list = {
         'IP':
-            [PyTango.DevString, 
+            [tango.DevString, 
              "Example:\n192.168.18.177/24",
             [] ],
         'ObjectName':
-            [PyTango.DevString, 
+            [tango.DevString, 
              '',
             [] ],
         'ObjectIdentifier':
-            [PyTango.DevString, 
+            [tango.DevString, 
              '',
             [] ],
         'Properties':
-            [PyTango.DevVarStringArray, 
+            [tango.DevVarStringArray, 
             "Example:\nip_address=192.168.118.17/24;BACnet_type=8;instance=2184450;property_name=location;write=True;data_type=CharacterString",
             [] ],
         'MaxApduLengthAccepted':
-            [PyTango.DevFloat, 
+            [tango.DevFloat, 
              '',
             [] ],
         'SegmentationSupported':
-            [PyTango.DevString, 
+            [tango.DevString, 
              '',
             [] ],
         }
@@ -328,20 +328,20 @@ class BACnetDSClass(PyTango.DeviceClass):
 
 def main():
     try:
-        py = PyTango.Util(sys.argv)
+        py = tango.Util(sys.argv)
         py.add_class(BACnetDSClass, BACnetDS, 'BACnetDS')
         #----- PROTECTED REGION ID(BACnetDS.add_classes) ENABLED START -----#
         
         #----- PROTECTED REGION END -----#	//	BACnetDS.add_classes
 
-        U = PyTango.Util.instance()
+        U = tango.Util.instance()
         U.server_init()
         U.server_run()
 
-    except PyTango.DevFailed as e:
-        print ('-------> Received a DevFailed exception:', e)
+    except tango.DevFailed as e:
+        print(('-------> Received a DevFailed exception:', e))
     except Exception as e:
-        print ('-------> An unforeseen exception occured....', e)
+        print(('-------> An unforeseen exception occured....', e))
 
 if __name__ == '__main__':
     main()

@@ -1,9 +1,9 @@
-#!/usr/local/bin/python2.7
+#!/usr/bin/env python3
 
 try:
     from setuptools import setup
 except ImportError:
-    print 'Can\' t find setuptools.'
+    print('Can\' t find setuptools.')
     from distutils.core import setup
 
 setup(name='BACnetDS',

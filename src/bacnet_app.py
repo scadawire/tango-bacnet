@@ -16,7 +16,7 @@ class ReadWriteApplication(BIPSimpleApplication):
         self._request = None
         self.response_values = []
         self.point_queue = deque(point_list)
-        print 'self.point_queue', self.point_queue
+        print('self.point_queue', self.point_queue)
 
     def refresh_points_list(self, point_list):
         self.point_queue = deque(point_list)
@@ -68,7 +68,7 @@ class ReadWriteApplication(BIPSimpleApplication):
                 value = float(value)
             elif datatype is CharacterString or datatype is OctetString:
                 value = str(value)
-                print value
+                print(value)
             elif datatype is Unsigned:
                 value = int(value)
             value = datatype(value)
@@ -76,21 +76,21 @@ class ReadWriteApplication(BIPSimpleApplication):
         try:
             self._request.propertyValue.cast_in(value)
         except Exception as error:
-            print error
+            print(error)
 
         BIPSimpleApplication.request(self, self._request)
 
     def confirmation(self, apdu):
         if isinstance(apdu, Error):
-            print apdu
+            print(apdu)
             pass
 
         elif isinstance(apdu, AbortPDU):
-            print apdu
+            print(apdu)
             pass
 
         elif isinstance(apdu, SimpleAckPDU):
-            print apdu
+            print(apdu)
             self.response_values = []
             stop()
 
